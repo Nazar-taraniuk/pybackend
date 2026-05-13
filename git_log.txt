@@ -1,0 +1,1 @@
+﻿a965c7f (HEAD -> dev, origin/main, origin/dev, main) init: FastAPI template project with Poetry
