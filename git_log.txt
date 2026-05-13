@@ -1,1 +1,5 @@
-﻿a965c7f (HEAD -> dev, origin/main, origin/dev, main) init: FastAPI template project with Poetry
+﻿2809a99 (HEAD -> dev) dev: add lab2 screenshots, commands log and pip list
+84633c4 Merge branch 'main' into dev
+2c7643e (origin/main, main) feat: add Docker setup with FastAPI and PostgreSQL containers
+c544af9 (origin/dev) dev: add git log file
+a965c7f init: FastAPI template project with Poetry
