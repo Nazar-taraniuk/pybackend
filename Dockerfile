@@ -17,5 +17,5 @@ RUN poetry config virtualenvs.create false \
 # Копіюємо код (буде перекрито через volume mount, але потрібно для build)
 COPY . .
 
-# Запускаємо uvicorn з автоперезавантаженням
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# Запускаємо через точку входу (main.py в корені проекту)
+CMD ["python", "main.py"]

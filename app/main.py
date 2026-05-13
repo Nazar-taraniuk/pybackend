@@ -4,6 +4,8 @@ from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy import text
 
+from app.routers import users
+
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+asyncpg://admin:secret@db:5432/pybackend")
 
 engine = create_async_engine(DATABASE_URL)
@@ -13,6 +15,9 @@ app = FastAPI(
     description="FastAPI college project",
     version="0.1.0",
 )
+
+# Підключаємо роутери
+app.include_router(users.router)
 
 
 @app.get("/", tags=["root"])
