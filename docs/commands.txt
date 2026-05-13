@@ -116,3 +116,72 @@ docker compose up --build -d
 
 # DELETE — видалити юзера
 # URL: DELETE http://localhost:8000/users/1
+
+
+# ============================================================
+# Лаба 4 — PostgreSQL + Alembic + Pydantic Settings + CRUD
+# ============================================================
+
+## 1. Встановлення нових залежностей
+
+poetry add alembic pydantic-settings
+
+## 2. Ініціалізація Alembic
+
+poetry run alembic init alembic
+
+## 3. Генерація першої міграції (запускати з середини контейнера або через docker run)
+
+# Генерація автоміграції на основі моделей
+docker exec pybackend_api alembic revision --autogenerate -m "initial_tables"
+
+# Або через тимчасовий контейнер (якщо api ще не запущено):
+docker run --rm --network pybackend_default -v "${PWD}:/app" pybackend-api alembic revision --autogenerate -m "initial_tables"
+
+## 4. Застосування міграцій та заповнення даними
+
+# Міграції + seed відбуваються автоматично при старті контейнера (CMD в Dockerfile)
+docker compose up --build -d
+
+# Або вручну всередині контейнера:
+docker exec pybackend_api alembic upgrade head
+docker exec pybackend_api python seed.py
+
+## 5. Перевірка даних у БД через psql
+
+docker exec pybackend_db psql -U admin -d pybackend -c "\dt"
+docker exec pybackend_db psql -U admin -d pybackend -c "SELECT * FROM categories;"
+docker exec pybackend_db psql -U admin -d pybackend -c "SELECT * FROM users;"
+docker exec pybackend_db psql -U admin -d pybackend -c "SELECT * FROM products;"
+
+
+# ============================================================
+# Лаба 5 — JWT Аутентифікація + HTTP-only Cookie + bcrypt
+# ============================================================
+
+## 1. Встановлення залежностей
+
+poetry add "python-jose[cryptography]" bcrypt
+
+## 2. Нова міграція для поля password_hash
+
+docker run --rm --network pybackend_default -v "${PWD}:/app" pybackend-api alembic revision --autogenerate -m "add_password_hash_to_users"
+
+## 3. API ендпоінти аутентифікації
+
+# Реєстрація нового юзера
+# POST http://localhost:8000/auth/register
+# Body: {"name": "Test User", "email": "test@example.com", "password": "password123"}
+
+# Вхід (JWT записується в HTTP-only куку)
+# POST http://localhost:8000/auth/login
+# Body: {"email": "test@example.com", "password": "password123"}
+
+# Поточний юзер (захищений endpoint, потребує куки)
+# GET http://localhost:8000/auth/me
+
+# Мої замовлення (захищений endpoint)
+# GET http://localhost:8000/auth/my-orders
+
+# Вихід (очищення куки)
+# POST http://localhost:8000/auth/logout
