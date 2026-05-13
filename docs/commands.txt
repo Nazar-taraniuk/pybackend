@@ -65,3 +65,54 @@ docker compose down
 
 # Зупинити і видалити все включно з volumes (дані БД будуть втрачені)
 docker compose down -v
+
+
+# ============================================================
+# Лаба 3 — CRUD для юзерів (FastAPI + Pydantic + Роутери)
+# ============================================================
+
+## 1. Встановлення нової залежності (валідація email)
+
+# pydantic[email] = pydantic + email-validator
+poetry add "pydantic[email]"
+
+
+## 2. Структура проекту після лаби 3
+
+# d:\pybackend\
+# ├── main.py                    ← точка входу (запускає uvicorn)
+# ├── Dockerfile                 ← оновлено: запуск через python main.py
+# ├── app/
+# │   ├── main.py               ← FastAPI app + підключення роутерів
+# │   ├── routers/
+# │   │   └── users.py          ← CRUD роутер для юзерів
+# │   └── schemas/
+# │       └── user.py           ← Pydantic схеми валідації
+
+
+## 3. Перебудова контейнера після змін
+
+docker compose down
+docker compose up --build -d
+
+
+## 4. Перевірка CRUD ендпоінтів (Postman або Swagger UI)
+
+# Swagger UI: http://localhost:8000/docs
+
+# POST — створити юзера
+# URL: POST http://localhost:8000/users
+# Body: {"name": "Ivan Petrenko", "email": "ivan@example.com"}
+
+# GET — всі юзери
+# URL: GET http://localhost:8000/users
+
+# GET — юзер за ID
+# URL: GET http://localhost:8000/users/1
+
+# PUT — оновити юзера
+# URL: PUT http://localhost:8000/users/1
+# Body: {"name": "Ivan Updated"}
+
+# DELETE — видалити юзера
+# URL: DELETE http://localhost:8000/users/1
