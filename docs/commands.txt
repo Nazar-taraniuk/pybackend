@@ -1,0 +1,67 @@
+# Лаба 2 — Послідовність команд
+# Docker + FastAPI + PostgreSQL
+
+## 1. Додавання залежностей через Poetry
+
+# Додаємо asyncpg (async драйвер PostgreSQL) та SQLAlchemy (ORM)
+poetry add asyncpg sqlalchemy
+
+
+## 2. Збірка і запуск контейнерів
+
+# Збудувати образи і підняти контейнери у фоні (-d = detached)
+docker compose up --build -d
+
+# Якщо потрібно перезапустити з нуля (видалити volumes)
+docker compose down -v
+docker compose up --build -d
+
+
+## 3. Перевірка стану контейнерів
+
+# Список запущених контейнерів з портами і статусом
+docker compose ps
+
+# Логи FastAPI сервісу (останні 20 рядків)
+docker compose logs api --tail=20
+
+# Логи PostgreSQL сервісу
+docker compose logs db --tail=20
+
+
+## 4. Список бібліотек всередині контейнера
+
+# Заходимо всередину контейнера і дивимось встановлені пакети
+docker exec pybackend_api pip list
+
+
+## 5. Перевірка роботи API (у браузері або curl)
+
+# Swagger документація
+# http://localhost:8000/docs
+
+# Перевірка підключення до PostgreSQL
+# http://localhost:8000/db-check
+
+# Health check
+# http://localhost:8000/health
+
+
+## 6. Автоперезавантаження при зміні коду
+
+# Завдяки volume mount (. :/app) і прапорцю --reload у uvicorn
+# сервер автоматично перезапускається при зміні будь-якого .py файлу
+# Перевірка: зміни app/main.py і дивись логи:
+docker compose logs api -f
+
+
+## 7. Зупинка контейнерів
+
+# Зупинити без видалення
+docker compose stop
+
+# Зупинити і видалити контейнери (але зберегти volume з даними БД)
+docker compose down
+
+# Зупинити і видалити все включно з volumes (дані БД будуть втрачені)
+docker compose down -v
