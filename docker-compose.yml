@@ -1,13 +1,12 @@
 services:
 
-  # --- FastAPI сервіс ---
+  # ── FastAPI сервіс ────────────────────────────────────────────────────────
   api:
     build: .
     container_name: pybackend_api
     ports:
       - "8000:8000"
     volumes:
-      # Монтуємо робочу папку → папку контейнера (для автоперезавантаження)
       - .:/app
     env_file:
       - .env
@@ -15,8 +14,11 @@ services:
       db:
         condition: service_healthy
     restart: unless-stopped
+    networks:
+      - backend
+      - monitoring
 
-  # --- PostgreSQL сервіс ---
+  # ── PostgreSQL сервіс ─────────────────────────────────────────────────────
   db:
     image: postgres:16-alpine
     container_name: pybackend_db
@@ -27,7 +29,6 @@ services:
       POSTGRES_PASSWORD: secret
       POSTGRES_DB: pybackend
     volumes:
-      # Персистентне сховище для бази даних
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U admin -d pybackend"]
@@ -35,6 +36,87 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
+    networks:
+      - backend
+      - monitoring
+
+  # ── Prometheus ────────────────────────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:v2.52.0
+    container_name: pybackend_prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=15d"
+      - "--web.enable-lifecycle"
+    restart: unless-stopped
+    networks:
+      - monitoring
+
+  # ── Grafana ───────────────────────────────────────────────────────────────
+  grafana:
+    image: grafana/grafana:11.1.0
+    container_name: pybackend_grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    networks:
+      - monitoring
+
+  # ── PostgreSQL Exporter ───────────────────────────────────────────────────
+  postgres_exporter:
+    image: prometheuscommunity/postgres-exporter:v0.15.0
+    container_name: pybackend_pg_exporter
+    ports:
+      - "9187:9187"
+    environment:
+      DATA_SOURCE_NAME: "postgresql://admin:secret@db:5432/pybackend?sslmode=disable"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - backend
+      - monitoring
+
+  # ── cAdvisor (Docker container metrics) ──────────────────────────────────
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    container_name: pybackend_cadvisor
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    privileged: true
+    devices:
+      - /dev/kmsg
+    restart: unless-stopped
+    networks:
+      - monitoring
+
+networks:
+  backend:
+  monitoring:
 
 volumes:
   postgres_data:
+  prometheus_data:
+  grafana_data:
