@@ -1,0 +1,40 @@
+services:
+
+  # --- FastAPI сервіс ---
+  api:
+    build: .
+    container_name: pybackend_api
+    ports:
+      - "8000:8000"
+    volumes:
+      # Монтуємо робочу папку → папку контейнера (для автоперезавантаження)
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # --- PostgreSQL сервіс ---
+  db:
+    image: postgres:16-alpine
+    container_name: pybackend_db
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: pybackend
+    volumes:
+      # Персистентне сховище для бази даних
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d pybackend"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
