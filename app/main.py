@@ -1,14 +1,6 @@
-import os
-
 from fastapi import FastAPI
-from sqlalchemy.ext.asyncio import create_async_engine
-from sqlalchemy import text
 
-from app.routers import users
-
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+asyncpg://admin:secret@db:5432/pybackend")
-
-engine = create_async_engine(DATABASE_URL)
+from app.routers import users, profiles, categories, products, orders, auth
 
 app = FastAPI(
     title="PyBackend",
@@ -16,26 +8,20 @@ app = FastAPI(
     version="0.1.0",
 )
 
-# Підключаємо роутери
+# Підключаємо всі роутери
+app.include_router(auth.router)
 app.include_router(users.router)
+app.include_router(profiles.router)
+app.include_router(categories.router)
+app.include_router(products.router)
+app.include_router(orders.router)
 
 
 @app.get("/", tags=["root"])
 async def root():
-    """Health check endpoint."""
     return {"message": "Hello from PyBackend!"}
 
 
 @app.get("/health", tags=["root"])
 async def health():
-    """Health status."""
     return {"status": "ok"}
-
-
-@app.get("/db-check", tags=["database"])
-async def db_check():
-    """Перевірка підключення до PostgreSQL."""
-    async with engine.connect() as conn:
-        result = await conn.execute(text("SELECT version()"))
-        version = result.scalar()
-    return {"postgres_version": version}

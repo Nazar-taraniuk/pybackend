@@ -10,12 +10,12 @@ WORKDIR /app
 # Копіюємо файли залежностей
 COPY pyproject.toml poetry.lock ./
 
-# Встановлюємо залежності без створення venv (в контейнері не потрібно)
+# Встановлюємо залежності без створення venv
 RUN poetry config virtualenvs.create false \
     && poetry install --no-root
 
-# Копіюємо код (буде перекрито через volume mount, але потрібно для build)
+# Копіюємо код (буде перекрито через volume mount)
 COPY . .
 
-# Запускаємо через точку входу (main.py в корені проекту)
-CMD ["python", "main.py"]
+# Запуск: міграції → seed → сервер
+CMD ["sh", "-c", "alembic upgrade head && python seed.py && python main.py"]
