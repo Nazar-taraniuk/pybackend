@@ -3,8 +3,8 @@ import bcrypt
 from jose import JWTError, jwt
 from fastapi import HTTPException, status
 
-# Налаштування JWT
-SECRET_KEY = "super-secret-key-change-in-production-please"
+
+SECRET_KEY = "super-secret-jwt-key-change-in-production-min-32-chars"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 години
 COOKIE_NAME = "access_token"
