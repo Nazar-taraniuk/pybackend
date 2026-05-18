@@ -1,31 +1,25 @@
 services:
 
-  # ── FastAPI сервіс ────────────────────────────────────────────────────────
+  # ── FastAPI сервіс (Prod) ─────────────────────────────────────────────────
   api:
-    build: .
+    image: ${DOCKER_HUB_USERNAME}/pybackend:${IMAGE_TAG:-latest}
     container_name: pybackend_api
     ports:
       - "8000:8000"
-    volumes:
-      - .:/app
     env_file:
       - .env
     depends_on:
       db:
         condition: service_healthy
-    restart: unless-stopped
+    restart: always
     networks:
       - backend
       - monitoring
 
-  # ── PostgreSQL сервіс ─────────────────────────────────────────────────────
+  # ── PostgreSQL (Prod) ─────────────────────────────────────────────────────
   db:
     image: postgres:16-alpine
     container_name: pybackend_db
-    ports:
-      - "5433:5432"
-    env_file:
-      - .env
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -36,8 +30,8 @@ services:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
-      retries: 5
-    restart: unless-stopped
+      retries: 10
+    restart: always
     networks:
       - backend
       - monitoring
@@ -53,9 +47,7 @@ services:
       - prometheus_data:/prometheus
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
-      - "--storage.tsdb.path=/prometheus"
       - "--storage.tsdb.retention.time=15d"
-      - "--web.enable-lifecycle"
     restart: unless-stopped
     networks:
       - monitoring
@@ -67,8 +59,8 @@ services:
     ports:
       - "3000:3000"
     environment:
-      GF_SECURITY_ADMIN_USER: admin
-      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_SECURITY_ADMIN_USER: ${GF_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GF_ADMIN_PASSWORD:-admin}
       GF_USERS_ALLOW_SIGN_UP: "false"
     volumes:
       - grafana_data:/var/lib/grafana
@@ -83,10 +75,6 @@ services:
   postgres_exporter:
     image: prometheuscommunity/postgres-exporter:v0.15.0
     container_name: pybackend_pg_exporter
-    ports:
-      - "9187:9187"
-    env_file:
-      - .env
     environment:
       DATA_SOURCE_NAME: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?sslmode=disable"
     depends_on:
@@ -97,7 +85,7 @@ services:
       - backend
       - monitoring
 
-  # ── cAdvisor (Docker container metrics) ──────────────────────────────────
+  # ── cAdvisor ─────────────────────────────────────────────────────────────
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.49.1
     container_name: pybackend_cadvisor
@@ -108,10 +96,7 @@ services:
       - /var/run:/var/run:ro
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
-      - /dev/disk/:/dev/disk:ro
     privileged: true
-    devices:
-      - /dev/kmsg
     restart: unless-stopped
     networks:
       - monitoring

@@ -30,10 +30,13 @@ build/
 # Logs
 *.log
 
-# Environment variables
+# Environment variables (не комітимо секрети!)
 .env
 .env.local
 .env.*.local
+
+# Docker
+postgres_data/
 
 # pytest
 .pytest_cache/

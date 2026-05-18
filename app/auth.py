@@ -3,10 +3,8 @@ import bcrypt
 from jose import JWTError, jwt
 from fastapi import HTTPException, status
 
-# Налаштування JWT
-SECRET_KEY = "super-secret-key-change-in-production-please"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 години
+from app.config import settings
+
 COOKIE_NAME = "access_token"
 
 
@@ -26,15 +24,15 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 def create_access_token(user_id: int) -> str:
     """Створюємо JWT токен з user_id всередині."""
-    expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    expire = datetime.now(timezone.utc) + timedelta(minutes=settings.access_token_expire_minutes)
     payload = {"sub": str(user_id), "exp": expire}
-    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    return jwt.encode(payload, settings.secret_key, algorithm=settings.algorithm)
 
 
 def decode_token(token: str) -> int:
     """Декодуємо токен і повертаємо user_id."""
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
         user_id = int(payload["sub"])
         return user_id
     except (JWTError, KeyError, ValueError):

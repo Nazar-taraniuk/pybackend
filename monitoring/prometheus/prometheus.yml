@@ -1,0 +1,34 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# prometheus.yml — конфігурація Prometheus для PyBackend
+# Збирає метрики з:
+#   - FastAPI (через /metrics endpoint)
+#   - PostgreSQL (через postgres_exporter)
+#   - Docker-контейнери (через cAdvisor)
+#   - сам Prometheus
+# ──────────────────────────────────────────────────────────────────────────────
+global:
+  scrape_interval: 15s       # як часто збирати метрики
+  evaluation_interval: 15s   # як часто обчислювати правила
+
+scrape_configs:
+
+  # --- Сам Prometheus ---
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # --- FastAPI застосунок ---
+  - job_name: "fastapi"
+    static_configs:
+      - targets: ["api:8000"]
+    metrics_path: "/metrics"
+
+  # --- PostgreSQL через postgres_exporter ---
+  - job_name: "postgres"
+    static_configs:
+      - targets: ["postgres_exporter:9187"]
+
+  # --- Docker-контейнери через cAdvisor ---
+  - job_name: "cadvisor"
+    static_configs:
+      - targets: ["cadvisor:8080"]

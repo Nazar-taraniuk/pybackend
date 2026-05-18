@@ -6,11 +6,17 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
+    # ── PostgreSQL ──────────────────────────────────────────────────────────────
     postgres_user: str = "admin"
     postgres_password: str = "secret"
     postgres_db: str = "pybackend"
     postgres_host: str = "db"
     postgres_port: int = 5432
+
+    # ── JWT / Auth ──────────────────────────────────────────────────────────────
+    secret_key: str = "change-me-in-production"
+    algorithm: str = "HS256"
+    access_token_expire_minutes: int = 1440  # 24 години
 
     @property
     def database_url(self) -> str:

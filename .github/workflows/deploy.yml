@@ -1,0 +1,188 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# GitHub Actions CI/CD Pipeline для PyBackend
+#
+# Стадії:
+#   1. test   — запуск pytest на тестовій PostgreSQL (GitHub Actions service)
+#   2. build  — збірка Docker image + push на Docker Hub
+#   3. deploy — SSH на EC2, pull нового image, перезапуск стеку
+#
+# Required secrets (Settings → Secrets → Actions):
+#   EC2_HOST            — публічний IP вашого EC2 інстансу
+#   EC2_USER            — ubuntu
+#   EC2_SSH_KEY         — вміст .pem файлу (private key)
+#   DOCKER_HUB_USERNAME — ваш Docker Hub логін
+#   DOCKER_HUB_TOKEN    — Docker Hub Access Token
+# ──────────────────────────────────────────────────────────────────────────────
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [dev, main]
+  pull_request:
+    branches: [main]
+
+env:
+  IMAGE_NAME: ${{ secrets.DOCKER_HUB_USERNAME }}/pybackend
+
+jobs:
+  # ── Job 1: Тести ────────────────────────────────────────────────────────────
+  test:
+    name: 🧪 Run Tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: secret
+          POSTGRES_DB: pybackend_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U admin -d pybackend_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      # Тестова БД — підставляється у conftest.py
+      DATABASE_URL: postgresql+asyncpg://admin:secret@localhost:5432/pybackend_test
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: pybackend_test
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
+      SECRET_KEY: test-secret-key-for-ci
+      ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          pip install poetry
+          poetry config virtualenvs.create false
+          poetry install --with dev
+
+      - name: Run tests
+        run: |
+          pytest tests/ -v --tb=short --asyncio-mode=auto
+
+  # ── Job 2: Build & Push Docker Image ────────────────────────────────────────
+  build:
+    name: 🐳 Build & Push Image
+    runs-on: ubuntu-latest
+    needs: test
+    # Тільки при пуші в main або dev (не при PR)
+    if: github.event_name == 'push'
+
+    outputs:
+      image_tag: ${{ steps.meta.outputs.version }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - name: Extract Docker metadata (tags + labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=sha-,format=short
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ── Job 3: Deploy to AWS EC2 ────────────────────────────────────────────────
+  deploy:
+    name: 🚀 Deploy to EC2
+    runs-on: ubuntu-latest
+    needs: build
+    # Деплой тільки з main (прод)
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    environment:
+      name: production
+      url: http://${{ secrets.EC2_HOST }}:8000/docs
+
+    steps:
+      - name: Checkout code (для compose файлів)
+        uses: actions/checkout@v4
+
+      - name: Copy compose & monitoring configs to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "docker-compose.prod.yml,monitoring/"
+          target: "/home/ubuntu/pybackend"
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            set -e
+            cd /home/ubuntu/pybackend
+
+            # Встановлення Docker (якщо перший деплой)
+            if ! command -v docker &> /dev/null; then
+              sudo apt update -y
+              sudo apt install -y docker.io docker-compose-plugin
+              sudo usermod -aG docker ubuntu
+              newgrp docker
+            fi
+
+            # Оновлення змінних середовища
+            export DOCKER_HUB_USERNAME=${{ secrets.DOCKER_HUB_USERNAME }}
+            export IMAGE_TAG=sha-$(echo ${{ github.sha }} | cut -c1-7)
+
+            # Логін до Docker Hub (для pull)
+            echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
+
+            # Pull нового образу
+            docker pull ${DOCKER_HUB_USERNAME}/pybackend:${IMAGE_TAG}
+
+            # Зупиняємо старий стек і запускаємо новий
+            DOCKER_HUB_USERNAME=${DOCKER_HUB_USERNAME} IMAGE_TAG=${IMAGE_TAG} \
+              docker compose -f docker-compose.prod.yml up -d --remove-orphans
+
+            # Чекаємо поки API піде вгору
+            sleep 10
+            curl -f http://localhost:8000/health || exit 1
+
+            echo "✅ Deployment successful! Tag: ${IMAGE_TAG}"
+
+            # Прибираємо старі образи
+            docker image prune -f
