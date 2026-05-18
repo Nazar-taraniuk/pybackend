@@ -1,0 +1,87 @@
+﻿docker : Skipping virtualenv creation, as specified in config file.
+At line:1 char:66
++ ... shots\lab6; docker compose exec api poetry run pytest tests/ -v --tb= ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Skipping virtua...in config file.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+============================= test session starts ==============================
+platform linux -- Python 3.11.15, pytest-9.0.3, pluggy-1.6.0 -- /usr/local/bin/python3.11
+cachedir: .pytest_cache
+rootdir: /app
+configfile: pytest.ini
+plugins: asyncio-1.3.0, anyio-4.13.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=session, asyncio_default_test_loop_scope=session
+collecting ... collected 69 items
+
+tests/test_auth.py::test_register_success PASSED                         [  1%]
+tests/test_auth.py::test_register_duplicate_email PASSED                 [  2%]
+tests/test_auth.py::test_register_invalid_email PASSED                   [  4%]
+tests/test_auth.py::test_register_short_password PASSED                  [  5%]
+tests/test_auth.py::test_login_success PASSED                            [  7%]
+tests/test_auth.py::test_login_wrong_password PASSED                     [  8%]
+tests/test_auth.py::test_login_nonexistent_user PASSED                   [ 10%]
+tests/test_auth.py::test_me_authenticated PASSED                         [ 11%]
+tests/test_auth.py::test_me_unauthenticated PASSED                       [ 13%]
+tests/test_auth.py::test_my_orders_authenticated PASSED                  [ 14%]
+tests/test_auth.py::test_my_orders_unauthenticated PASSED                [ 15%]
+tests/test_auth.py::test_logout PASSED                                   [ 17%]
+tests/test_categories.py::test_get_categories_empty PASSED               [ 18%]
+tests/test_categories.py::test_create_category PASSED                    [ 20%]
+tests/test_categories.py::test_get_category_by_id PASSED                 [ 21%]
+tests/test_categories.py::test_get_category_not_found PASSED             [ 23%]
+tests/test_categories.py::test_update_category PASSED                    [ 24%]
+tests/test_categories.py::test_delete_category PASSED                    [ 26%]
+tests/test_categories.py::test_delete_category_not_found PASSED          [ 27%]
+tests/test_crud.py::test_crud_create_user PASSED                         [ 28%]
+tests/test_crud.py::test_crud_get_user_by_id PASSED                      [ 30%]
+tests/test_crud.py::test_crud_get_user_by_id_not_found PASSED            [ 31%]
+tests/test_crud.py::test_crud_get_user_by_email PASSED                   [ 33%]
+tests/test_crud.py::test_crud_get_user_by_email_not_found PASSED         [ 34%]
+tests/test_crud.py::test_crud_get_all_users PASSED                       [ 36%]
+tests/test_crud.py::test_crud_update_user PASSED                         [ 37%]
+tests/test_crud.py::test_crud_update_user_not_found PASSED               [ 39%]
+tests/test_crud.py::test_crud_delete_user PASSED                         [ 40%]
+tests/test_crud.py::test_crud_delete_user_not_found PASSED               [ 42%]
+tests/test_crud.py::test_crud_create_category PASSED                     [ 43%]
+tests/test_crud.py::test_crud_get_category_by_id PASSED                  [ 44%]
+tests/test_crud.py::test_crud_update_category PASSED                     [ 46%]
+tests/test_crud.py::test_crud_delete_category PASSED                     [ 47%]
+tests/test_crud.py::test_crud_create_product PASSED                      [ 49%]
+tests/test_crud.py::test_crud_get_products_by_category PASSED            [ 50%]
+tests/test_crud.py::test_crud_update_product PASSED                      [ 52%]
+tests/test_crud.py::test_crud_delete_product PASSED                      [ 53%]
+tests/test_orders.py::test_get_orders_empty PASSED                       [ 55%]
+tests/test_orders.py::test_create_order PASSED                           [ 56%]
+tests/test_orders.py::test_get_order_by_id PASSED                        [ 57%]
+tests/test_orders.py::test_get_order_not_found PASSED                    [ 59%]
+tests/test_orders.py::test_update_order_status PASSED                    [ 60%]
+tests/test_orders.py::test_delete_order PASSED                           [ 62%]
+tests/test_products.py::test_create_product PASSED                       [ 63%]
+tests/test_products.py::test_get_products_empty PASSED                   [ 65%]
+tests/test_products.py::test_get_product_by_id PASSED                    [ 66%]
+tests/test_products.py::test_get_product_not_found PASSED                [ 68%]
+tests/test_products.py::test_update_product PASSED                       [ 69%]
+tests/test_products.py::test_delete_product PASSED                       [ 71%]
+tests/test_products.py::test_get_products_by_category PASSED             [ 72%]
+tests/test_profiles.py::test_create_profile PASSED                       [ 73%]
+tests/test_profiles.py::test_get_profile_by_user PASSED                  [ 75%]
+tests/test_profiles.py::test_get_profile_not_found PASSED                [ 76%]
+tests/test_profiles.py::test_update_profile PASSED                       [ 78%]
+tests/test_profiles.py::test_delete_profile PASSED                       [ 79%]
+tests/test_profiles.py::test_create_duplicate_profile PASSED             [ 81%]
+tests/test_root.py::test_root_returns_hello PASSED                       [ 82%]
+tests/test_root.py::test_health_returns_ok PASSED                        [ 84%]
+tests/test_users.py::test_get_users_empty PASSED                         [ 85%]
+tests/test_users.py::test_create_user PASSED                             [ 86%]
+tests/test_users.py::test_create_user_duplicate_email PASSED             [ 88%]
+tests/test_users.py::test_create_user_invalid_email PASSED               [ 89%]
+tests/test_users.py::test_get_user_by_id PASSED                          [ 91%]
+tests/test_users.py::test_get_user_not_found PASSED                      [ 92%]
+tests/test_users.py::test_get_all_users PASSED                           [ 94%]
+tests/test_users.py::test_update_user PASSED                             [ 95%]
+tests/test_users.py::test_update_user_not_found PASSED                   [ 97%]
+tests/test_users.py::test_delete_user PASSED                             [ 98%]
+tests/test_users.py::test_delete_user_not_found PASSED                   [100%]
+
+============================== 69 passed in 8.20s ==============================

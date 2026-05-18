@@ -1,9 +1,11 @@
-from fastapi import FastAPI, Request
+import asyncio
+import logging
+from fastapi import FastAPI, Request, BackgroundTasks
 from prometheus_fastapi_instrumentator import Instrumentator
 
 from app.routers import users, profiles, categories, products, orders, auth
-from app.database import get_db
-from app.metrics import update_all_metrics
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="PyBackend",
@@ -23,17 +25,33 @@ app.include_router(products.router)
 app.include_router(orders.router)
 
 
-# ── Middleware: оновлення кастомних метрик після кожного запиту ───────────────
+async def _refresh_metrics_bg() -> None:
+    """Фонова задача: оновлює кастомні метрики з БД (fire-and-forget)."""
+    try:
+        from app.database import AsyncSessionLocal
+        from app.metrics import update_all_metrics
+        async with AsyncSessionLocal() as db:
+            await update_all_metrics(db)
+    except Exception as e:
+        logger.debug("Metrics update skipped: %s", e)
+
+
+# ── Middleware: тригерує оновлення метрик після кожного запиту ────────────────
 @app.middleware("http")
-async def update_custom_metrics(request: Request, call_next):
+async def trigger_metrics_refresh(request: Request, call_next):
+    """
+    Після кожного HTTP запиту (крім /metrics) — запускає фонове оновлення
+    кастомних метрик через asyncio.ensure_future (не блокує відповідь).
+    """
     response = await call_next(request)
-    # Пропускаємо запити до /metrics щоб уникнути рекурсії
     if not request.url.path.startswith("/metrics"):
+        # Fire-and-forget: не чекаємо на завершення, не блокуємо відповідь
         try:
-            async for db in get_db():
-                await update_all_metrics(db)
-        except Exception:
-            pass  # не блокуємо відповідь якщо БД недоступна
+            loop = asyncio.get_event_loop()
+            if not loop.is_closed():
+                loop.create_task(_refresh_metrics_bg())
+        except RuntimeError:
+            pass  # event loop вже закритий (напр. під час teardown тестів)
     return response
 
 
@@ -45,3 +63,10 @@ async def root():
 @app.get("/health", tags=["root"])
 async def health():
     return {"status": "ok"}
+
+
+@app.get("/metrics/refresh", tags=["monitoring"])
+async def refresh_metrics_endpoint(background_tasks: BackgroundTasks):
+    """Вручну тригерує оновлення кастомних метрик (для демонстрації)."""
+    background_tasks.add_task(_refresh_metrics_bg)
+    return {"status": "metrics refresh scheduled"}
