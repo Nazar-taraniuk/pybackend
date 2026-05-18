@@ -1,8 +1,0 @@
-﻿a50432d (HEAD -> dev) dev: add lab3 Postman screenshots and commands
-0718cf1 (origin/main, main) feat: lab3 - users CRUD with routers, Pydantic schemas and entry point
-9dd76ec (origin/dev) dev: update git log
-2809a99 dev: add lab2 screenshots, commands log and pip list
-84633c4 Merge branch 'main' into dev
-2c7643e feat: add Docker setup with FastAPI and PostgreSQL containers
-c544af9 dev: add git log file
-a965c7f init: FastAPI template project with Poetry
