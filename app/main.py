@@ -3,7 +3,7 @@ from prometheus_fastapi_instrumentator import Instrumentator
 
 from app.routers import users, profiles, categories, products, orders, auth
 from app.database import get_db
-from app.metrics import update_orders_cost, update_products_count
+from app.metrics import update_all_metrics
 
 app = FastAPI(
     title="PyBackend",
@@ -31,8 +31,7 @@ async def update_custom_metrics(request: Request, call_next):
     if not request.url.path.startswith("/metrics"):
         try:
             async for db in get_db():
-                await update_orders_cost(db)
-                await update_products_count(db)
+                await update_all_metrics(db)
         except Exception:
             pass  # не блокуємо відповідь якщо БД недоступна
     return response
