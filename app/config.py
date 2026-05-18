@@ -2,19 +2,23 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    """Конфіг проекту — читає змінні з .env файлу."""
+    """Конфіг проекту — читає змінні з .env файлу.
+    
+    Всі поля без дефолтів — ОБОВ'ЯЗКОВІ (pydantic кине помилку якщо нема в .env).
+    Секрети (паролі, ключі) ніколи не мають дефолтних значень у коді.
+    """
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     # ── PostgreSQL ──────────────────────────────────────────────────────────────
-    postgres_user: str = "admin"
-    postgres_password: str = "secret"
-    postgres_db: str = "pybackend"
+    postgres_user: str
+    postgres_password: str
+    postgres_db: str
     postgres_host: str = "db"
     postgres_port: int = 5432
 
     # ── JWT / Auth ──────────────────────────────────────────────────────────────
-    secret_key: str = "change-me-in-production"
+    secret_key: str                          # обов'язково з .env — без дефолту!
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 1440  # 24 години
 
