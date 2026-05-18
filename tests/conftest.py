@@ -19,7 +19,7 @@ from httpx import AsyncClient, ASGITransport
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
-from app.main import app
+from app.main import app as fastapi_app
 from app.database import get_db, Base
 from app.config import settings
 import app.models  # noqa: F401 — реєструємо моделі в Base.metadata
@@ -94,7 +94,7 @@ async def setup_test_db():
 
 
 # ── Function fixtures ─────────────────────────────────────────────────────────
-@pytest_asyncio.fixture(autouse=True)
+@pytest_asyncio.fixture(autouse=True, loop_scope="session")
 async def clean_tables():
     """Очищення таблиць після кожного тесту через TRUNCATE CASCADE."""
     yield
@@ -104,23 +104,23 @@ async def clean_tables():
         await conn.commit()
 
 
-@pytest_asyncio.fixture()
+@pytest_asyncio.fixture(loop_scope="session")
 async def db_session() -> AsyncSession:
     """Пряме з'єднання з тестовою БД для unit-тестів CRUD функцій."""
     async with TestSessionLocal() as session:
         yield session
 
 
-@pytest_asyncio.fixture()
+@pytest_asyncio.fixture(loop_scope="session")
 async def client() -> AsyncClient:
     """HTTP клієнт FastAPI з підміненою залежністю get_db."""
-    app.dependency_overrides[get_db] = override_get_db
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
+    fastapi_app.dependency_overrides[get_db] = override_get_db
+    async with AsyncClient(transport=ASGITransport(app=fastapi_app), base_url="http://test") as c:
         yield c
-    app.dependency_overrides.clear()
+    fastapi_app.dependency_overrides.clear()
 
 
-@pytest_asyncio.fixture()
+@pytest_asyncio.fixture(loop_scope="session")
 async def auth_client(client: AsyncClient) -> AsyncClient:
     """HTTP клієнт з активною авторизацією (JWT у куці)."""
     await client.post("/auth/register", json={
