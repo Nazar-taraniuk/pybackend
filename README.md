@@ -37,8 +37,20 @@ poetry run uvicorn app.main:app --reload
 ```bash
 docker compose up -d
 python scripts/warmup_metrics.py
+# після змін дашбордів:
+python scripts/generate_grafana_dashboards.py
+docker restart pybackend_grafana
 ```
 
 - Grafana: http://localhost:3000 (admin / admin)
 - Prometheus: http://localhost:9090
 - Метрики API: http://localhost:8000/metrics
+
+**4 дашборди** (папка PyBackend):
+
+| Дашборд | URL |
+|---------|-----|
+| API Server | http://localhost:3000/d/pybackend-api |
+| PostgreSQL | http://localhost:3000/d/pybackend-postgresql |
+| Docker / cAdvisor | http://localhost:3000/d/pybackend-docker |
+| Custom metrics | http://localhost:3000/d/pybackend-custom |
