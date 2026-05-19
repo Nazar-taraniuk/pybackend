@@ -39,7 +39,7 @@ async def _refresh_metrics_bg() -> None:
         async with AsyncSessionLocal() as db:
             await update_all_metrics(db)
     except Exception as e:
-        logger.debug("Metrics update skipped: %s", e)
+        logger.warning("Metrics update failed: %s", e, exc_info=True)
 
 
 # ── Middleware: тригерує оновлення метрик після кожного запиту ────────────────
