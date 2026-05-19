@@ -8,6 +8,11 @@ from app.crud import profile as crud
 router = APIRouter(prefix="/profiles", tags=["profiles"])
 
 
+@router.get("/", response_model=list[ProfileResponse])
+async def get_profiles(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)):
+    return await crud.get_all(db, skip, limit)
+
+
 @router.get("/{profile_id}", response_model=ProfileResponse)
 async def get_profile(profile_id: int, db: AsyncSession = Depends(get_db)):
     profile = await crud.get_by_id(db, profile_id)
@@ -28,7 +33,10 @@ async def get_profile_by_user(user_id: int, db: AsyncSession = Depends(get_db)):
 async def create_profile(data: ProfileCreate, db: AsyncSession = Depends(get_db)):
     if await crud.get_by_user_id(db, data.user_id):
         raise HTTPException(status_code=400, detail="Profile for this user already exists")
-    return await crud.create(db, data)
+    try:
+        return await crud.create(db, data)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
 @router.put("/{profile_id}", response_model=ProfileResponse)

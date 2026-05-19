@@ -5,7 +5,7 @@
   "tags": ["pybackend", "fastapi", "custom", "postgres"],
   "timezone": "browser",
   "schemaVersion": 38,
-  "version": 2,
+  "version": 3,
   "refresh": "15s",
   "panels": [
     {
@@ -480,11 +480,320 @@
       ]
     },
     {
+      "id": 100,
+      "type": "row",
+      "title": "🚀 FastAPI — контейнер pybackend_api",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 44 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 17,
+      "type": "timeseries",
+      "title": "🚀 API — HTTP Rate by Status",
+      "description": "Швидкість запитів FastAPI згрупована за HTTP-статусом (контейнер api)",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 45 },
+      "options": {
+        "tooltip": { "mode": "multi" },
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] }
+      },
+      "fieldConfig": {
+        "defaults": { "unit": "reqps", "color": { "mode": "palette-classic" } },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "sum(rate(http_requests_total[1m])) by (status)",
+          "legendFormat": "HTTP {{status}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "type": "timeseries",
+      "title": "🚀 API — Top Handlers (req/s)",
+      "description": "Найактивніші ендпоінти FastAPI",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 45 },
+      "options": {
+        "tooltip": { "mode": "multi" },
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] }
+      },
+      "fieldConfig": {
+        "defaults": { "unit": "reqps", "color": { "mode": "palette-classic" } },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "topk(8, sum(rate(http_requests_total[1m])) by (handler, method))",
+          "legendFormat": "{{handler}} [{{method}}]",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "type": "timeseries",
+      "title": "🚀 API — CPU (pybackend_api)",
+      "description": "CPU лише для FastAPI-контейнера",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 53 },
+      "fieldConfig": {
+        "defaults": { "unit": "percentunit", "color": { "mode": "palette-classic" } },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "rate(container_cpu_usage_seconds_total{name=\"pybackend_api\"}[1m])",
+          "legendFormat": "CPU api",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "type": "timeseries",
+      "title": "🚀 API — RAM (pybackend_api)",
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 53 },
+      "fieldConfig": {
+        "defaults": { "unit": "bytes", "color": { "mode": "palette-classic" } },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "container_memory_usage_bytes{name=\"pybackend_api\"}",
+          "legendFormat": "RAM api",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "type": "timeseries",
+      "title": "🚀 API — Network RX/TX",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 53 },
+      "fieldConfig": {
+        "defaults": { "unit": "Bps", "color": { "mode": "palette-classic" } },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "rate(container_network_receive_bytes_total{name=\"pybackend_api\"}[1m])",
+          "legendFormat": "RX api",
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "rate(container_network_transmit_bytes_total{name=\"pybackend_api\"}[1m])",
+          "legendFormat": "TX api",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "type": "timeseries",
+      "title": "🚀 API — HTTP Errors Rate",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 61 },
+      "fieldConfig": {
+        "defaults": { "unit": "reqps", "color": { "mode": "palette-classic" } },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "sum(rate(http_requests_total{status=~\"4..|5..\"}[1m])) by (status)",
+          "legendFormat": "errors {{status}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "type": "timeseries",
+      "title": "🚀 API — Request Duration by Handler (p95)",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 61 },
+      "fieldConfig": {
+        "defaults": { "unit": "s", "color": { "mode": "palette-classic" } },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[1m])) by (le, handler))",
+          "legendFormat": "p95 {{handler}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 101,
+      "type": "row",
+      "title": "🗄️ PostgreSQL — контейнер pybackend_db",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 69 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 24,
+      "type": "timeseries",
+      "title": "🗄️ DB — CPU (pybackend_db)",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 70 },
+      "fieldConfig": {
+        "defaults": { "unit": "percentunit", "color": { "mode": "palette-classic" } },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "rate(container_cpu_usage_seconds_total{name=\"pybackend_db\"}[1m])",
+          "legendFormat": "CPU db",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 25,
+      "type": "timeseries",
+      "title": "🗄️ DB — RAM (pybackend_db)",
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 70 },
+      "fieldConfig": {
+        "defaults": { "unit": "bytes", "color": { "mode": "palette-classic" } },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "container_memory_usage_bytes{name=\"pybackend_db\"}",
+          "legendFormat": "RAM db",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 26,
+      "type": "timeseries",
+      "title": "🗄️ DB — Network RX/TX",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 70 },
+      "fieldConfig": {
+        "defaults": { "unit": "Bps", "color": { "mode": "palette-classic" } },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "rate(container_network_receive_bytes_total{name=\"pybackend_db\"}[1m])",
+          "legendFormat": "RX db",
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "rate(container_network_transmit_bytes_total{name=\"pybackend_db\"}[1m])",
+          "legendFormat": "TX db",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "id": 27,
+      "type": "timeseries",
+      "title": "🗄️ DB — Transactions (commit vs rollback)",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 78 },
+      "fieldConfig": {
+        "defaults": { "unit": "ops", "color": { "mode": "palette-classic" } },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "rate(pg_stat_database_xact_commit{datname=\"pybackend\"}[1m])",
+          "legendFormat": "commits",
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "rate(pg_stat_database_xact_rollback{datname=\"pybackend\"}[1m])",
+          "legendFormat": "rollbacks",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "id": 28,
+      "type": "timeseries",
+      "title": "🗄️ DB — Tuple Operations",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 78 },
+      "fieldConfig": {
+        "defaults": { "unit": "ops", "color": { "mode": "palette-classic" } },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "rate(pg_stat_database_tup_returned{datname=\"pybackend\"}[1m])",
+          "legendFormat": "returned",
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "rate(pg_stat_database_tup_fetched{datname=\"pybackend\"}[1m])",
+          "legendFormat": "fetched",
+          "refId": "B"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "rate(pg_stat_database_tup_inserted{datname=\"pybackend\"}[1m])",
+          "legendFormat": "inserted",
+          "refId": "C"
+        }
+      ]
+    },
+    {
+      "id": 29,
+      "type": "timeseries",
+      "title": "🗄️ DB — Cache Hit Ratio",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 86 },
+      "fieldConfig": {
+        "defaults": { "unit": "percentunit", "min": 0, "max": 1, "color": { "mode": "palette-classic" } },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "pg_stat_database_blks_hit{datname=\"pybackend\"} / (pg_stat_database_blks_hit{datname=\"pybackend\"} + pg_stat_database_blks_read{datname=\"pybackend\"})",
+          "legendFormat": "cache hit ratio",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 30,
+      "type": "timeseries",
+      "title": "🗄️ DB — Locks",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 86 },
+      "fieldConfig": {
+        "defaults": { "unit": "short", "color": { "mode": "palette-classic" } },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "pg_locks_count",
+          "legendFormat": "{{mode}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
       "id": 16,
       "type": "timeseries",
       "title": "📈 Custom Metrics Over Time",
       "description": "Динаміка кастомних метрик БД у часі",
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 44 },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 94 },
       "options": {
         "tooltip": { "mode": "multi" },
         "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["last", "max"] }

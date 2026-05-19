@@ -2,6 +2,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
+from app.crud import product as product_crud
+from app.crud import user as user_crud
 from app.models.order import Order, OrderItem
 from app.schemas.order import OrderCreate, OrderUpdate
 
@@ -20,7 +22,23 @@ async def get_by_id(db: AsyncSession, order_id: int) -> Order | None:
     return result.scalar_one_or_none()
 
 
+async def get_by_user_id(db: AsyncSession, user_id: int) -> list[Order]:
+    result = await db.execute(
+        select(Order)
+        .options(selectinload(Order.items))
+        .where(Order.user_id == user_id)
+        .order_by(Order.id)
+    )
+    return list(result.scalars().all())
+
+
 async def create(db: AsyncSession, data: OrderCreate) -> Order:
+    if not await user_crud.get_by_id(db, data.user_id):
+        raise ValueError(f"User {data.user_id} not found")
+    for item in data.items:
+        if not await product_crud.get_by_id(db, item.product_id):
+            raise ValueError(f"Product {item.product_id} not found")
+
     order = Order(user_id=data.user_id)
     db.add(order)
     await db.flush()  # отримуємо order.id

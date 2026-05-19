@@ -16,6 +16,12 @@ app = FastAPI(
 # ── Prometheus: автоматичні HTTP-метрики ──────────────────────────────────────
 Instrumentator().instrument(app).expose(app)
 
+@app.on_event("startup")
+async def refresh_metrics_on_startup() -> None:
+    """Оновлює кастомні метрики одразу після старту (щоб Grafana не показувала нулі)."""
+    await _refresh_metrics_bg()
+
+
 # Підключаємо всі роутери
 app.include_router(auth.router)
 app.include_router(users.router)

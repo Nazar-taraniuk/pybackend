@@ -13,6 +13,11 @@ async def get_products(skip: int = 0, limit: int = 100, db: AsyncSession = Depen
     return await crud.get_all(db, skip, limit)
 
 
+@router.get("/category/{category_id}", response_model=list[ProductResponse])
+async def get_products_by_category(category_id: int, db: AsyncSession = Depends(get_db)):
+    return await crud.get_by_category(db, category_id)
+
+
 @router.get("/{product_id}", response_model=ProductResponse)
 async def get_product(product_id: int, db: AsyncSession = Depends(get_db)):
     product = await crud.get_by_id(db, product_id)
@@ -21,14 +26,12 @@ async def get_product(product_id: int, db: AsyncSession = Depends(get_db)):
     return product
 
 
-@router.get("/category/{category_id}", response_model=list[ProductResponse])
-async def get_products_by_category(category_id: int, db: AsyncSession = Depends(get_db)):
-    return await crud.get_by_category(db, category_id)
-
-
 @router.post("/", response_model=ProductResponse, status_code=status.HTTP_201_CREATED)
 async def create_product(data: ProductCreate, db: AsyncSession = Depends(get_db)):
-    return await crud.create(db, data)
+    try:
+        return await crud.create(db, data)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
 @router.put("/{product_id}", response_model=ProductResponse)

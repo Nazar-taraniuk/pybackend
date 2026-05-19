@@ -20,3 +20,8 @@ class TokenResponse(BaseModel):
     token_type: str = "bearer"
     user_id: int
     name: str
+
+
+class UpdateMeRequest(BaseModel):
+    """Оновлення профілю поточного користувача."""
+    name: str = Field(..., min_length=1, max_length=100)

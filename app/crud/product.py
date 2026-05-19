@@ -1,18 +1,18 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
+from app.crud import category as category_crud
+from app.crud.base import get_all_records, get_by_id_record
 from app.models.product import Product
 from app.schemas.product import ProductCreate, ProductUpdate
 
 
 async def get_all(db: AsyncSession, skip: int = 0, limit: int = 100) -> list[Product]:
-    result = await db.execute(select(Product).offset(skip).limit(limit))
-    return list(result.scalars().all())
+    return await get_all_records(db, Product, skip=skip, limit=limit)
 
 
 async def get_by_id(db: AsyncSession, product_id: int) -> Product | None:
-    result = await db.execute(select(Product).where(Product.id == product_id))
-    return result.scalar_one_or_none()
+    return await get_by_id_record(db, Product, product_id)
 
 
 async def get_by_category(db: AsyncSession, category_id: int) -> list[Product]:
@@ -21,6 +21,9 @@ async def get_by_category(db: AsyncSession, category_id: int) -> list[Product]:
 
 
 async def create(db: AsyncSession, data: ProductCreate) -> Product:
+    if not await category_crud.get_by_id(db, data.category_id):
+        raise ValueError(f"Category {data.category_id} not found")
+
     product = Product(**data.model_dump())
     db.add(product)
     await db.commit()

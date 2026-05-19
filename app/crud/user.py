@@ -1,18 +1,17 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
+from app.crud.base import get_all_records, get_by_id_record
 from app.models.user import User
 from app.schemas.user import UserCreate, UserUpdate
 
 
 async def get_all(db: AsyncSession, skip: int = 0, limit: int = 100) -> list[User]:
-    result = await db.execute(select(User).offset(skip).limit(limit))
-    return list(result.scalars().all())
+    return await get_all_records(db, User, skip=skip, limit=limit)
 
 
 async def get_by_id(db: AsyncSession, user_id: int) -> User | None:
-    result = await db.execute(select(User).where(User.id == user_id))
-    return result.scalar_one_or_none()
+    return await get_by_id_record(db, User, user_id)
 
 
 async def get_by_email(db: AsyncSession, email: str) -> User | None:
@@ -22,6 +21,21 @@ async def get_by_email(db: AsyncSession, email: str) -> User | None:
 
 async def create(db: AsyncSession, data: UserCreate) -> User:
     user = User(**data.model_dump())
+    db.add(user)
+    await db.commit()
+    await db.refresh(user)
+    return user
+
+
+async def create_with_password(
+    db: AsyncSession,
+    *,
+    name: str,
+    email: str,
+    password_hash: str,
+) -> User:
+    """Створює користувача з bcrypt-хешем пароля (реєстрація через /auth)."""
+    user = User(name=name, email=email, password_hash=password_hash)
     db.add(user)
     await db.commit()
     await db.refresh(user)

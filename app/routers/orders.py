@@ -23,7 +23,10 @@ async def get_order(order_id: int, db: AsyncSession = Depends(get_db)):
 
 @router.post("/", response_model=OrderResponse, status_code=status.HTTP_201_CREATED)
 async def create_order(data: OrderCreate, db: AsyncSession = Depends(get_db)):
-    return await crud.create(db, data)
+    try:
+        return await crud.create(db, data)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
 @router.put("/{order_id}", response_model=OrderResponse)

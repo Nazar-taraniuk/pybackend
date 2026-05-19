@@ -1,18 +1,16 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 
+from app.crud.base import get_all_records, get_by_id_record
 from app.models.category import Category
 from app.schemas.category import CategoryCreate, CategoryUpdate
 
 
 async def get_all(db: AsyncSession, skip: int = 0, limit: int = 100) -> list[Category]:
-    result = await db.execute(select(Category).offset(skip).limit(limit))
-    return list(result.scalars().all())
+    return await get_all_records(db, Category, skip=skip, limit=limit)
 
 
 async def get_by_id(db: AsyncSession, category_id: int) -> Category | None:
-    result = await db.execute(select(Category).where(Category.id == category_id))
-    return result.scalar_one_or_none()
+    return await get_by_id_record(db, Category, category_id)
 
 
 async def create(db: AsyncSession, data: CategoryCreate) -> Category:
