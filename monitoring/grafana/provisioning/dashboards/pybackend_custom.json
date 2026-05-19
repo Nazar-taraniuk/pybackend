@@ -39,7 +39,7 @@
       },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "pybackend_total_orders_cost",
           "legendFormat": "Total Cost",
           "refId": "A"
@@ -73,7 +73,7 @@
       },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "pybackend_products_total",
           "legendFormat": "Products",
           "refId": "A"
@@ -107,7 +107,7 @@
       },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "pybackend_users_total",
           "legendFormat": "Users",
           "refId": "A"
@@ -141,7 +141,7 @@
       },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "pybackend_orders_total",
           "legendFormat": "Orders",
           "refId": "A"
@@ -175,7 +175,7 @@
       },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "pybackend_categories_total",
           "legendFormat": "Categories",
           "refId": "A"
@@ -210,7 +210,7 @@
       },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "pybackend_avg_order_value",
           "legendFormat": "Avg Order",
           "refId": "A"
@@ -243,7 +243,7 @@
       },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "pybackend_metrics_db_updates_total",
           "legendFormat": "DB Refreshes",
           "refId": "A"
@@ -278,7 +278,7 @@
       },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "sum(http_requests_total{status=~\"4..|5..\"}) or vector(0)",
           "legendFormat": "HTTP Errors",
           "refId": "A"
@@ -304,7 +304,7 @@
       },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "rate(http_requests_total[1m])",
           "legendFormat": "{{handler}} [{{method}}] {{status}}",
           "refId": "A"
@@ -330,7 +330,7 @@
       },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[1m])) by (le, handler))",
           "legendFormat": "p95 {{handler}}",
           "refId": "A"
@@ -356,19 +356,19 @@
       },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))",
           "legendFormat": "p50",
           "refId": "A"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))",
           "legendFormat": "p95",
           "refId": "B"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))",
           "legendFormat": "p99",
           "refId": "C"
@@ -394,7 +394,7 @@
       },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "rate(container_cpu_usage_seconds_total{name=~\"pybackend_api|pybackend_db\"}[1m])",
           "legendFormat": "CPU — {{name}}",
           "refId": "A"
@@ -420,7 +420,7 @@
       },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "container_memory_usage_bytes{name=~\"pybackend_api|pybackend_db\"}",
           "legendFormat": "RAM — {{name}}",
           "refId": "A"
@@ -446,7 +446,7 @@
       },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "pg_stat_activity_count{datname=\"pybackend\"}",
           "legendFormat": "Active connections",
           "refId": "A"
@@ -472,7 +472,7 @@
       },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "pg_database_size_bytes{datname=\"pybackend\"}",
           "legendFormat": "DB size",
           "refId": "A"
@@ -503,7 +503,7 @@
       },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "sum(rate(http_requests_total[1m])) by (status)",
           "legendFormat": "HTTP {{status}}",
           "refId": "A"
@@ -526,7 +526,7 @@
       },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "topk(8, sum(rate(http_requests_total[1m])) by (handler, method))",
           "legendFormat": "{{handler}} [{{method}}]",
           "refId": "A"
@@ -545,7 +545,7 @@
       },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "rate(container_cpu_usage_seconds_total{name=\"pybackend_api\"}[1m])",
           "legendFormat": "CPU api",
           "refId": "A"
@@ -563,7 +563,7 @@
       },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "container_memory_usage_bytes{name=\"pybackend_api\"}",
           "legendFormat": "RAM api",
           "refId": "A"
@@ -581,13 +581,13 @@
       },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "rate(container_network_receive_bytes_total{name=\"pybackend_api\"}[1m])",
           "legendFormat": "RX api",
           "refId": "A"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "rate(container_network_transmit_bytes_total{name=\"pybackend_api\"}[1m])",
           "legendFormat": "TX api",
           "refId": "B"
@@ -605,7 +605,7 @@
       },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "sum(rate(http_requests_total{status=~\"4..|5..\"}[1m])) by (status)",
           "legendFormat": "errors {{status}}",
           "refId": "A"
@@ -623,7 +623,7 @@
       },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[1m])) by (le, handler))",
           "legendFormat": "p95 {{handler}}",
           "refId": "A"
@@ -649,7 +649,7 @@
       },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "rate(container_cpu_usage_seconds_total{name=\"pybackend_db\"}[1m])",
           "legendFormat": "CPU db",
           "refId": "A"
@@ -667,7 +667,7 @@
       },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "container_memory_usage_bytes{name=\"pybackend_db\"}",
           "legendFormat": "RAM db",
           "refId": "A"
@@ -685,13 +685,13 @@
       },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "rate(container_network_receive_bytes_total{name=\"pybackend_db\"}[1m])",
           "legendFormat": "RX db",
           "refId": "A"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "rate(container_network_transmit_bytes_total{name=\"pybackend_db\"}[1m])",
           "legendFormat": "TX db",
           "refId": "B"
@@ -709,13 +709,13 @@
       },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "rate(pg_stat_database_xact_commit{datname=\"pybackend\"}[1m])",
           "legendFormat": "commits",
           "refId": "A"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "rate(pg_stat_database_xact_rollback{datname=\"pybackend\"}[1m])",
           "legendFormat": "rollbacks",
           "refId": "B"
@@ -733,19 +733,19 @@
       },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "rate(pg_stat_database_tup_returned{datname=\"pybackend\"}[1m])",
           "legendFormat": "returned",
           "refId": "A"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "rate(pg_stat_database_tup_fetched{datname=\"pybackend\"}[1m])",
           "legendFormat": "fetched",
           "refId": "B"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "rate(pg_stat_database_tup_inserted{datname=\"pybackend\"}[1m])",
           "legendFormat": "inserted",
           "refId": "C"
@@ -763,7 +763,7 @@
       },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "pg_stat_database_blks_hit{datname=\"pybackend\"} / (pg_stat_database_blks_hit{datname=\"pybackend\"} + pg_stat_database_blks_read{datname=\"pybackend\"})",
           "legendFormat": "cache hit ratio",
           "refId": "A"
@@ -781,7 +781,7 @@
       },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "pg_locks_count",
           "legendFormat": "{{mode}}",
           "refId": "A"
@@ -807,25 +807,25 @@
       },
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "pybackend_users_total",
           "legendFormat": "Users",
           "refId": "A"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "pybackend_products_total",
           "legendFormat": "Products",
           "refId": "B"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "pybackend_orders_total",
           "legendFormat": "Orders",
           "refId": "C"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "pybackend_categories_total",
           "legendFormat": "Categories",
           "refId": "D"
@@ -839,7 +839,7 @@
         "name": "datasource",
         "type": "datasource",
         "query": "prometheus",
-        "current": { "selected": true, "text": "Prometheus", "value": "Prometheus" },
+        "current": { "selected": true, "text": "Prometheus", "value": "prometheus" },
         "hide": 0,
         "label": "Data Source"
       }

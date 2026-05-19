@@ -59,11 +59,11 @@ async def update_orders_cost(db: AsyncSession) -> None:
     from app.models.order import OrderItem
     from app.models.product import Product
 
-    stmt = select(
-        func.coalesce(
-            func.sum(Product.price * OrderItem.quantity), 0
-        )
-    ).join(Product, OrderItem.product_id == Product.id)
+    stmt = (
+        select(func.coalesce(func.sum(Product.price * OrderItem.quantity), 0))
+        .select_from(OrderItem)
+        .join(Product, OrderItem.product_id == Product.id)
+    )
 
     result = await db.execute(stmt)
     total = result.scalar() or 0
@@ -117,9 +117,11 @@ async def update_avg_order_value(db: AsyncSession) -> None:
     from app.models.product import Product
 
     # Загальна сума
-    cost_stmt = select(
-        func.coalesce(func.sum(Product.price * OrderItem.quantity), 0)
-    ).join(Product, OrderItem.product_id == Product.id)
+    cost_stmt = (
+        select(func.coalesce(func.sum(Product.price * OrderItem.quantity), 0))
+        .select_from(OrderItem)
+        .join(Product, OrderItem.product_id == Product.id)
+    )
     cost_result = await db.execute(cost_stmt)
     total_cost = float(cost_result.scalar() or 0)
 
